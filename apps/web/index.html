@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#1d69f1" />
+  <link rel="canonical" href="https://thawdrop.com/" />
+  <title>Thawdrop — Share files & folders peer to peer, no upload</title>
+  <meta name="description" content="Share files and folders straight from your computer with a link or QR code. No upload, no server storage, no size limit — the file goes directly from your device to theirs over WebRTC." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://thawdrop.com/" />
+  <meta property="og:site_name" content="Thawdrop" />
+  <meta property="og:title" content="Thawdrop — Share files & folders peer to peer" />
+  <meta property="og:description" content="No upload, no server storage, no size limit — the file goes directly from your device to theirs over WebRTC." />
+  <meta property="og:image" content="https://thawdrop.com/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Thawdrop — Share files & folders peer to peer" />
+  <meta name="twitter:description" content="No upload, no server storage, no size limit — the file goes directly from your device to theirs over WebRTC." />
+  <meta name="twitter:image" content="https://thawdrop.com/og-image.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Thawdrop",
+    "url": "https://thawdrop.com/",
+    "description": "Share files and folders straight from your computer with a link or QR code. No upload, no server storage, no size limit.",
+    "operatingSystem": "macOS",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f1115;
+      color: #f2f4f8;
+    }
+    main {
+      width: min(420px, 90vw);
+      text-align: center;
+    }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .filename { font-size: 15px; color: #9aa4b8; word-break: break-all; margin-bottom: 20px; }
+    .bar {
+      height: 8px;
+      border-radius: 4px;
+      background: #1b1e27;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #3b82f6;
+      transition: width 0.2s ease;
+    }
+    .stats { font-size: 12px; color: #6b7280; margin-bottom: 24px; }
+    .download-btn {
+      display: inline-block;
+      background: #22c55e;
+      color: #06210f;
+      font: inherit;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #1b1e27;
+      border: 1px solid #2b2f3a;
+      border-radius: 8px;
+      padding: 8px 10px 8px 14px;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .file-row .name {
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-row .download-btn {
+      flex: none;
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+    .tree { text-align: left; margin-bottom: 8px; }
+    .tree details { margin-bottom: 4px; }
+    .tree summary { cursor: pointer; font-size: 13px; padding: 6px 4px; color: #c9d1e0; }
+    .tree .children { margin-left: 14px; border-left: 1px solid #2b2f3a; padding-left: 8px; }
+    .file-row .size { color: #6b7280; font-size: 11px; margin-left: 6px; }
+    body.landing { display: block; }
+    #landing { max-width: 880px; margin: 0 auto; padding: 56px 20px 72px; }
+    #landing h1 { font-size: 40px; margin: 16px 0 8px; letter-spacing: -0.5px; }
+    #landing h2 { font-size: 22px; margin: 56px 0 6px; }
+    #landing .lead { font-size: 17px; color: #9aa4b8; line-height: 1.6; max-width: 620px; }
+    #landing .sub { color: #6b7280; font-size: 14px; margin: 0 0 20px; }
+    #landing .logo { width: 64px; height: 64px; border-radius: 14px; }
+    #landing .note {
+      margin-top: 24px; padding: 12px 16px; border-radius: 10px;
+      background: #1b1e27; border: 1px solid #2b2f3a; color: #9aa4b8; font-size: 14px;
+    }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 20px; }
+    .step { background: #1b1e27; border: 1px solid #2b2f3a; border-radius: 12px; padding: 16px; }
+    .step .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #3b82f6; color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 10px;
+    }
+    .step h3 { margin: 0 0 6px; font-size: 15px; }
+    .step p { margin: 0; font-size: 13px; color: #9aa4b8; line-height: 1.55; }
+    .screenshots {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 28px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 4px;
+    }
+    .screenshot { flex: none; width: 270px; margin: 0; text-align: center; }
+    .screenshot img { width: 100%; height: auto; display: block; border-radius: 8px; }
+    .screenshot figcaption { margin-top: 10px; font-size: 12px; color: #9aa4b8; line-height: 1.4; }
+    .diagram { margin: 28px 0 0; padding: 20px 16px 14px; background: #14171e; border: 1px solid #2b2f3a; border-radius: 12px; }
+    .diagram svg { width: 100%; height: auto; display: block; }
+    .diagram .flow-tall { display: none; max-width: 340px; margin: 0 auto; }
+    .diagram figcaption { margin-top: 12px; font-size: 12px; color: #6b7280; line-height: 1.6; text-align: center; }
+    .flow .box { fill: #1b1e27; stroke: #2b2f3a; stroke-width: 1.5; }
+    .flow .pill { fill: #172554; stroke: #3b82f6; stroke-width: 1.5; }
+    .flow .relay { fill: none; stroke: #4b5563; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .flow .dash { fill: none; stroke: #4b5563; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .flow .link { fill: none; stroke: #6b7280; stroke-width: 2; }
+    .flow .data { fill: none; stroke: #3b82f6; stroke-width: 4; }
+    .flow .badge { fill: #3b82f6; }
+    .flow text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+    .flow .t { fill: #f2f4f8; font-size: 13px; font-weight: 600; }
+    .flow .s { fill: #9aa4b8; font-size: 11.5px; }
+    .flow .n { fill: #fff; font-size: 12px; font-weight: 700; }
+    .flow .m { fill: #93c5fd; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+    .flow .ring { fill: none; stroke: #93c5fd; stroke-width: 2; }
+    .flow .dot { fill: #e0f2fe; }
+    .flow .dash { animation: dashflow 1.6s linear infinite; }
+    @keyframes dashflow { to { stroke-dashoffset: -18; } }
+    @media (prefers-reduced-motion: reduce) {
+      .flow .anim { display: none; }
+      .flow .dash { animation: none; }
+    }
+    .flow .blue { fill: #93c5fd; font-size: 12.5px; font-weight: 600; }
+    @media (max-width: 640px) {
+      .diagram .flow-wide { display: none; }
+      .diagram .flow-tall { display: block; }
+    }
+    .facts { margin: 20px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+    .facts li { font-size: 14px; color: #c9d1e0; line-height: 1.55; padding-left: 22px; position: relative; }
+    .facts li::before { content: "•"; color: #3b82f6; position: absolute; left: 6px; }
+    .facts b { color: #f2f4f8; }
+    .table-wrap { overflow-x: auto; margin-top: 20px; border: 1px solid #2b2f3a; border-radius: 12px; }
+    table.compare { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13px; }
+    .compare th, .compare td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2b2f3a; vertical-align: top; }
+    .compare thead th { background: #1b1e27; font-size: 12px; color: #9aa4b8; }
+    .compare thead th small { display: block; font-weight: 400; color: #6b7280; margin-top: 2px; }
+    .compare tbody tr:last-child td, .compare tbody tr:last-child th { border-bottom: none; }
+    .compare tbody th { font-weight: 500; color: #c9d1e0; width: 24%; }
+    .compare .us { background: rgba(59, 130, 246, 0.10); }
+    .compare thead .us { color: #93c5fd; }
+    .yes { color: #4ade80; } .no { color: #f87171; } .mid { color: #fbbf24; }
+    .pros-cons { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 20px; }
+    .box { background: #1b1e27; border: 1px solid #2b2f3a; border-radius: 12px; padding: 16px 18px; }
+    .box h3 { margin: 0 0 10px; font-size: 15px; }
+    .box ul { margin: 0; padding-left: 18px; font-size: 13px; color: #c9d1e0; line-height: 1.7; }
+    .foot { margin-top: 40px; font-size: 12px; color: #6b7280; line-height: 1.6; }
+    .error { color: #f87171; }
+    .hint { font-size: 12px; color: #6b7280; margin-top: 24px; line-height: 1.6; }
+    .password-prompt { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+    .password-prompt input[type="password"] {
+      width: 100%;
+      box-sizing: border-box;
+      background: #1b1e27;
+      border: 1px solid #2b2f3a;
+      border-radius: 8px;
+      color: #f2f4f8;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    .hero-actions { margin: 24px 0 0; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #3b82f6;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 12px 20px;
+      border-radius: 10px;
+    }
+    .btn-download svg { width: 20px; height: 20px; flex: none; }
+    .btn-download .meta { display: block; font-weight: 400; font-size: 11px; color: #dbeafe; margin-top: 1px; }
+
+    body.report-page { display: block; }
+    #report { max-width: 720px; margin: 0 auto; padding: 56px 20px 72px; text-align: center; }
+    #report .report-title {
+      font-size: 34px; margin: 0 0 8px; font-weight: 800;
+      background: linear-gradient(90deg, #3b82f6, #22d3ee);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    #report .sub { color: #9aa4b8; font-size: 15px; margin: 0; }
+    .report-card { margin-top: 32px; background: #14171e; border: 1px solid #2b2f3a; border-radius: 16px; padding: 32px 24px; }
+    .report-stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 8px; flex-wrap: wrap; }
+    .report-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #9aa4b8; margin-bottom: 6px; }
+    .report-number { font-size: 40px; font-weight: 800; }
+    .chart { display: flex; align-items: flex-end; justify-content: center; gap: 20px; height: 160px; margin-top: 40px; }
+    .chart-bar-wrap { display: flex; flex-direction: column; align-items: center; flex: none; width: 36px; height: 100%; justify-content: flex-end; }
+    .chart-bar { width: 100%; background: #3b82f6; border-radius: 3px 3px 0 0; min-height: 2px; }
+    .chart-date { font-size: 11px; color: #6b7280; margin-top: 8px; white-space: nowrap; }
+    .report-empty { color: #6b7280; font-size: 13px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div id="landing" hidden>
+    <img class="logo" src="/apple-touch-icon.png" alt="Thawdrop logo" />
+    <h1>Thawdrop</h1>
+    <p class="lead">
+      Share files and folders straight from your computer with a link or QR code.
+      No upload, no server storage, no size limit — the file goes directly from
+      your device to theirs.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-download" id="downloadMacBtn" href="/download/Thawdrop.dmg">
+        <svg viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+        <span>
+          Download for Mac
+          <span class="meta" id="downloadMacMeta">Apple Silicon</span>
+        </span>
+      </a>
+    </div>
+    <div class="note">
+      Received a Thawdrop link? Just open it in this browser — nothing to install.
+      The sender needs the desktop app; the receiver only needs a browser.
+    </div>
+
+    <h2>How it works</h2>
+    <p class="sub">Four steps, and the file never sits on someone else's server.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Pick a file or folder</h3>
+        <p>In the desktop app, drop it in, browse for it, or right-click it and choose “Share with Thawdrop”. Optionally add a password, an expiry time, or a download limit.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Get a link and QR code</h3>
+        <p>The app starts sharing straight from your disk and turns it into a <b>magnet link</b>, shown as a link and a QR code. Nothing is uploaded anywhere.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>They open the link</h3>
+        <p>The receiver opens it in any browser, sees the name and size (or a folder they can browse), and picks what to download.</p>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <h3>Direct transfer</h3>
+        <p>The browser connects to your computer peer-to-peer (WebRTC) and pulls only what was chosen. Keep the app open until they're done.</p>
+      </div>
+    </div>
+
+    <div class="screenshots">
+      <figure class="screenshot">
+        <img src="/screenshot/dropzone.png" alt="Thawdrop's dropzone: drag files or folders in to share, or click to browse" loading="lazy" />
+        <figcaption>1–2. Drop a file or folder</figcaption>
+      </figure>
+      <figure class="screenshot">
+        <img src="/screenshot/options.png" alt="Thawdrop's share options: an optional password, expiry time and download limit" loading="lazy" />
+        <figcaption>2. Add a password, expiry or limit — all optional</figcaption>
+      </figure>
+      <figure class="screenshot">
+        <img src="/screenshot/share-link.png" alt="Thawdrop showing a ready-to-share link and QR code" loading="lazy" />
+        <figcaption>3. Get a link and QR code, ready to share</figcaption>
+      </figure>
+    </div>
+
+    <figure class="diagram">
+      <svg class="flow flow-wide" viewBox="0 0 760 320" role="img" aria-labelledby="flowWideTitle">
+        <title id="flowWideTitle">Sender's computer shares a magnet link with the receiver's browser, then the file travels directly between them over WebRTC.</title>
+        <defs>
+          <marker id="aw-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6b7280"/></marker>
+          <marker id="aw-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#3b82f6"/></marker>
+        </defs>
+
+        <rect class="box" x="20" y="100" width="210" height="110" rx="14"/>
+        <circle class="badge" cx="40" cy="120" r="11"/><text class="n" x="40" y="124">1</text>
+        <text class="t" x="130" y="124">Sender's computer</text>
+        <text class="s" x="125" y="148">Thawdrop desktop app</text>
+        <text class="s" x="125" y="168">File stays on your disk</text>
+        <text class="s" x="125" y="188">Shared via WebTorrent</text>
+
+        <rect class="box" x="530" y="100" width="210" height="110" rx="14"/>
+        <text class="t" x="635" y="124">Receiver's browser</text>
+        <text class="s" x="635" y="148">Any browser, no install</text>
+        <text class="s" x="635" y="168">Sees the file or folder</text>
+        <text class="s" x="635" y="188">Downloads what it picks</text>
+
+        <rect class="pill" x="290" y="20" width="180" height="50" rx="25"/>
+        <text class="t" x="380" y="41">Magnet link + QR</text>
+        <text class="m" x="380" y="58">thawdrop.com/#magnet:?…</text>
+
+        <path class="link" d="M125 100 C125 45 200 45 288 45" marker-end="url(#aw-gray)"/>
+        <circle class="badge" cx="170" cy="52" r="11"/><text class="n" x="170" y="56">2</text>
+        <path class="link" d="M472 45 C560 45 635 45 635 98" marker-end="url(#aw-gray)"/>
+        <circle class="badge" cx="595" cy="52" r="11"/><text class="n" x="595" y="56">3</text>
+
+        <line class="data" x1="232" y1="160" x2="527" y2="160" marker-end="url(#aw-blue)"/>
+        <circle class="badge" cx="380" cy="118" r="11"/><text class="n" x="380" y="122">4</text>
+        <text class="blue" x="380" y="146">Direct transfer (WebRTC)</text>
+        <text class="s" x="380" y="184">only the files the receiver picks</text>
+
+        <rect class="relay" x="265" y="235" width="230" height="66" rx="12"/>
+        <text class="t" x="380" y="257">Trackers &amp; STUN</text>
+        <text class="s" x="380" y="275">only help the two find each other</text>
+        <text class="s" x="380" y="291">they never see the file</text>
+        <path class="dash" d="M265 268 C190 268 125 255 125 212"/>
+        <path class="dash" d="M495 268 C570 268 635 255 635 212"/>
+        <g class="anim" aria-hidden="true"><circle class="ring" cx="40" cy="120" r="11" opacity="0"><animate attributeName="r" dur="8s" repeatCount="indefinite" values="11;11;23;23" keyTimes="0;0.02;0.14;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;0.95;0;0" keyTimes="0;0.02;0.021;0.14;1"/></circle><circle class="ring" cx="170" cy="52" r="11" opacity="0"><animate attributeName="r" dur="8s" repeatCount="indefinite" values="11;11;23;23" keyTimes="0;0.16;0.3;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;0.95;0;0" keyTimes="0;0.16;0.161;0.3;1"/></circle><circle class="dot" cx="0" cy="0" r="5" opacity="0"><animateMotion dur="8s" repeatCount="indefinite" path="M125 100 C125 45 200 45 288 45" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.16;0.32;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.16;0.180;0.300;0.32;1"/></circle><circle class="ring" cx="595" cy="52" r="11" opacity="0"><animate attributeName="r" dur="8s" repeatCount="indefinite" values="11;11;23;23" keyTimes="0;0.34;0.48;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;0.95;0;0" keyTimes="0;0.34;0.341;0.48;1"/></circle><circle class="dot" cx="0" cy="0" r="5" opacity="0"><animateMotion dur="8s" repeatCount="indefinite" path="M472 45 C560 45 635 45 635 98" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.34;0.5;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.34;0.360;0.480;0.5;1"/></circle><circle class="ring" cx="380" cy="118" r="11" opacity="0"><animate attributeName="r" dur="8s" repeatCount="indefinite" values="11;11;23;23" keyTimes="0;0.52;0.66;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;0.95;0;0" keyTimes="0;0.52;0.521;0.66;1"/></circle><circle class="dot" cx="0" cy="0" r="4" opacity="0"><animateMotion dur="0.8s" begin="0.00s" repeatCount="indefinite" path="M232 160 L527 160"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.54;0.560;0.960;0.98;1"/></circle><circle class="dot" cx="0" cy="0" r="4" opacity="0"><animateMotion dur="0.8s" begin="0.27s" repeatCount="indefinite" path="M232 160 L527 160"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.54;0.560;0.960;0.98;1"/></circle><circle class="dot" cx="0" cy="0" r="4" opacity="0"><animateMotion dur="0.8s" begin="0.53s" repeatCount="indefinite" path="M232 160 L527 160"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.54;0.560;0.960;0.98;1"/></circle></g>
+      </svg>
+
+      <svg class="flow flow-tall" viewBox="0 0 320 472" role="img" aria-labelledby="flowTallTitle">
+        <title id="flowTallTitle">Sender's computer shares a magnet link with the receiver's browser, then the file travels directly between them over WebRTC.</title>
+        <defs>
+          <marker id="at-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6b7280"/></marker>
+          <marker id="at-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#3b82f6"/></marker>
+        </defs>
+
+        <rect class="box" x="20" y="10" width="200" height="100" rx="14"/>
+        <circle class="badge" cx="40" cy="30" r="11"/><text class="n" x="40" y="34">1</text>
+        <text class="t" x="130" y="34">Sender's computer</text>
+        <text class="s" x="120" y="58">Thawdrop desktop app</text>
+        <text class="s" x="120" y="76">File stays on your disk</text>
+        <text class="s" x="120" y="94">Shared via WebTorrent</text>
+
+        <line class="link" x1="120" y1="112" x2="120" y2="146" marker-end="url(#at-gray)"/>
+        <circle class="badge" cx="150" cy="129" r="11"/><text class="n" x="150" y="133">2</text>
+
+        <rect class="pill" x="20" y="148" width="200" height="54" rx="27"/>
+        <text class="t" x="120" y="171">Magnet link + QR</text>
+        <text class="m" x="120" y="188">thawdrop.com/#magnet:?…</text>
+
+        <line class="link" x1="120" y1="204" x2="120" y2="238" marker-end="url(#at-gray)"/>
+        <circle class="badge" cx="150" cy="221" r="11"/><text class="n" x="150" y="225">3</text>
+
+        <rect class="box" x="20" y="240" width="200" height="100" rx="14"/>
+        <text class="t" x="120" y="264">Receiver's browser</text>
+        <text class="s" x="120" y="288">Any browser, no install</text>
+        <text class="s" x="120" y="306">Sees the file or folder</text>
+        <text class="s" x="120" y="324">Downloads what it picks</text>
+
+        <path class="data" d="M222 60 L270 60 L270 290 L224 290" marker-end="url(#at-blue)"/>
+        <circle class="badge" cx="270" cy="175" r="11"/><text class="n" x="270" y="179">4</text>
+        <text class="blue" x="0" y="0" transform="translate(296 175) rotate(90)">Direct transfer (WebRTC)</text>
+
+        <rect class="relay" x="20" y="384" width="280" height="76" rx="12"/>
+        <text class="t" x="160" y="409">Trackers &amp; STUN</text>
+        <text class="s" x="160" y="428">only help the two find each other</text>
+        <text class="s" x="160" y="445">they never see the file</text>
+        <path class="dash" d="M120 384 L120 342"/>
+        <g class="anim" aria-hidden="true"><circle class="ring" cx="40" cy="30" r="11" opacity="0"><animate attributeName="r" dur="8s" repeatCount="indefinite" values="11;11;23;23" keyTimes="0;0.02;0.14;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;0.95;0;0" keyTimes="0;0.02;0.021;0.14;1"/></circle><circle class="ring" cx="150" cy="129" r="11" opacity="0"><animate attributeName="r" dur="8s" repeatCount="indefinite" values="11;11;23;23" keyTimes="0;0.16;0.3;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;0.95;0;0" keyTimes="0;0.16;0.161;0.3;1"/></circle><circle class="dot" cx="0" cy="0" r="5" opacity="0"><animateMotion dur="8s" repeatCount="indefinite" path="M120 112 L120 146" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.16;0.32;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.16;0.180;0.300;0.32;1"/></circle><circle class="ring" cx="150" cy="221" r="11" opacity="0"><animate attributeName="r" dur="8s" repeatCount="indefinite" values="11;11;23;23" keyTimes="0;0.34;0.48;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;0.95;0;0" keyTimes="0;0.34;0.341;0.48;1"/></circle><circle class="dot" cx="0" cy="0" r="5" opacity="0"><animateMotion dur="8s" repeatCount="indefinite" path="M120 204 L120 238" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.34;0.5;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.34;0.360;0.480;0.5;1"/></circle><circle class="ring" cx="270" cy="175" r="11" opacity="0"><animate attributeName="r" dur="8s" repeatCount="indefinite" values="11;11;23;23" keyTimes="0;0.52;0.66;1"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;0.95;0;0" keyTimes="0;0.52;0.521;0.66;1"/></circle><circle class="dot" cx="0" cy="0" r="4" opacity="0"><animateMotion dur="0.8s" begin="0.00s" repeatCount="indefinite" path="M222 60 L270 60 L270 290 L224 290"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.54;0.560;0.960;0.98;1"/></circle><circle class="dot" cx="0" cy="0" r="4" opacity="0"><animateMotion dur="0.8s" begin="0.27s" repeatCount="indefinite" path="M222 60 L270 60 L270 290 L224 290"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.54;0.560;0.960;0.98;1"/></circle><circle class="dot" cx="0" cy="0" r="4" opacity="0"><animateMotion dur="0.8s" begin="0.53s" repeatCount="indefinite" path="M222 60 L270 60 L270 290 L224 290"/><animate attributeName="opacity" dur="8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.54;0.560;0.960;0.98;1"/></circle></g>
+      </svg>
+
+      <figcaption>
+        The file travels only along the blue line, straight from the sender to the receiver.
+        thawdrop.com just serves this page; the part of the link after <code>#</code> never reaches it.
+      </figcaption>
+    </figure>
+
+    <ul class="facts">
+      <li><b>The link is a magnet link.</b> It's the same kind of link BitTorrent uses: it identifies what is being shared and how to find the sender, but contains no file data. Thawdrop wraps it as <code>thawdrop.com/#magnet:?…</code>, so the address sits after the <code>#</code>, which browsers never send to a server.</li>
+      <li><b>The link is the key.</b> Anyone who has it can download, so treat it (and the QR code) like a password — or add a real password on top.</li>
+      <li><b>Folders are browsable.</b> Receivers see the file tree and download individual files — unchosen files are never transferred.</li>
+      <li><b>Password shares are encrypted</b> in the sender's app (AES-GCM) before sharing. The password is never in the link, so send it separately.</li>
+      <li><b>Sharing ends when you want.</b> Stop it manually, let it expire, or cap the number of downloads.</li>
+    </ul>
+
+    <h2>How it compares</h2>
+    <p class="sub">Grouped by type of tool, with well-known examples of each.</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="us">Thawdrop</th>
+            <th>Cloud upload<small>WeTransfer, Google Drive</small></th>
+            <th>Nearby sharing<small>AirDrop, Quick Share, PairDrop</small></th>
+            <th>Browser P2P<small>FilePizza, Send Anywhere</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>What the share link is</th>
+            <td class="us"><b>A magnet link</b> (BitTorrent-style) that points to the sender's device</td><td>A URL to a file on the provider's server</td><td>No link: devices find each other nearby or by pairing code</td><td>A link or short code for a live session with the sender</td>
+          </tr>
+          <tr>
+            <th>Technology underneath</th>
+            <td class="us">WebTorrent over WebRTC</td><td>Upload and download over HTTPS</td><td>Wi-Fi/Bluetooth, or WebRTC for PairDrop</td><td>WebRTC</td>
+          </tr>
+          <tr>
+            <th>File stored on a third-party server</th>
+            <td class="us yes">No</td><td class="no">Yes</td><td class="yes">No</td><td class="yes">Usually no</td>
+          </tr>
+          <tr>
+            <th>Size limit</th>
+            <td class="us yes">None</td><td class="no">Yes, especially on free plans</td><td class="yes">None</td><td class="mid">Varies</td>
+          </tr>
+          <tr>
+            <th>Receiver needs to install anything</th>
+            <td class="us yes">No, a browser is enough</td><td class="yes">No</td><td class="mid">Depends on the app and device</td><td class="mid">Varies</td>
+          </tr>
+          <tr>
+            <th>Works between different networks</th>
+            <td class="us yes">Yes</td><td class="yes">Yes</td><td class="mid">Mostly nearby devices</td><td class="yes">Yes</td>
+          </tr>
+          <tr>
+            <th>One link for many receivers</th>
+            <td class="us yes">Yes</td><td class="yes">Yes</td><td class="no">One device at a time</td><td class="mid">Limited</td>
+          </tr>
+          <tr>
+            <th>Receiver can pick single files from a folder</th>
+            <td class="us yes">Yes</td><td class="mid">Usually as a zip</td><td class="no">No</td><td class="no">Generally no</td>
+          </tr>
+          <tr>
+            <th>Right-click “Share” on a file</th>
+            <td class="us yes">Yes</td><td class="no">No</td><td class="mid">Built into some systems</td><td class="no">No</td>
+          </tr>
+          <tr>
+            <th>Sender can go offline after sending</th>
+            <td class="us no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">Usually no</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pros-cons">
+      <div class="box">
+        <h3 class="yes">Where Thawdrop is stronger</h3>
+        <ul>
+          <li>Private: files never pass through or rest on a server.</li>
+          <li>No size limit and no waiting for an upload to finish.</li>
+          <li>Receivers only need a browser, and can pick just the files they want.</li>
+          <li>Optional password encryption, expiry and download limits.</li>
+          <li>Works across networks, not just between nearby devices.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3 class="no">Where others are better</h3>
+        <ul>
+          <li>Cloud tools let the sender close their laptop — Thawdrop needs the sender online until the transfer ends.</li>
+          <li>Built-in tools like AirDrop are faster to reach and need no setup for nearby devices.</li>
+          <li>Strict corporate or campus networks can block direct connections unless a relay is available.</li>
+          <li>Thawdrop is new, so it's less familiar than the big names.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="foot">
+      Comparison is based on the general behaviour of each kind of tool and may
+      differ by product, plan or version. Check a tool's own site for its
+      current details.
+    </p>
+  </div>
+
+  <div id="report" hidden>
+    <h1 class="report-title">Download Report</h1>
+    <p class="sub">Statistics for Thawdrop downloads over time.</p>
+    <div class="report-card">
+      <div class="report-stats">
+        <div>
+          <div class="report-label">Total Downloads</div>
+          <div class="report-number" id="statTotal">—</div>
+        </div>
+        <div>
+          <div class="report-label">Total Today</div>
+          <div class="report-number" id="statToday">—</div>
+        </div>
+      </div>
+      <div class="chart" id="chart"></div>
+      <p class="report-empty" id="reportEmpty" hidden>No downloads recorded yet.</p>
+    </div>
+  </div>
+
+  <main id="receiver">
+    <h1 id="title">Waiting for link…</h1>
+    <div class="filename" id="filename"></div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <div class="stats" id="stats"></div>
+    <div id="downloadArea"></div>
+    <p class="hint">
+      This file is streamed directly from the sender's device over a
+      peer-to-peer connection (WebRTC) — it is never stored on any server.
+      The sender must be online for the transfer to work.
+    </p>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

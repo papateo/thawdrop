@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "Default capability for Thawdrop share windows",
+  "windows": ["*"],
+  "permissions": ["core:default", "updater:default", "process:default"]
+}

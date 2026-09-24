@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /report
+Disallow: /api/
+
+Sitemap: https://thawdrop.com/sitemap.xml

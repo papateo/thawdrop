@@ -1,0 +1,17 @@
+{
+  "name": "icenet",
+  "compatibility_date": "2026-09-16",
+  "main": "worker.js",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/download/*", "/api/*"]
+  },
+  "routes": [
+    { "pattern": "thawdrop.com", "custom_domain": true }
+  ],
+  "kv_namespaces": [
+    { "binding": "STATS", "id": "ecc788b4a3e44ba29eb63b6c45c77abd" }
+  ]
+}

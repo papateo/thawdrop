@@ -1,0 +1,17 @@
+{
+  "name": "icenet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Share any file over a direct peer-to-peer link or QR code — no upload, no server storage.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "desktop": "npm run dev --workspace @icenet/desktop",
+    "desktop:build": "npm run build --workspace @icenet/desktop",
+    "web": "npm run dev --workspace @icenet/web",
+    "web:build": "npm run build --workspace @icenet/web"
+  },
+  "license": "MIT"
+}

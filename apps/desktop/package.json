@@ -1,0 +1,24 @@
+{
+  "name": "@icenet/desktop",
+  "version": "0.1.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "vite:dev": "vite",
+    "vite:build": "vite build"
+  },
+  "dependencies": {
+    "@icenet/crypto": "*",
+    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.12.0",
+    "qrcode": "^1.5.4",
+    "webtorrent": "^3.0.21"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0",
+    "vite": "8.0.16"
+  }
+}
