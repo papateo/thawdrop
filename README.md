@@ -8,6 +8,17 @@ your machine over WebRTC.
 
 Web receiver: <https://thawdrop.com>
 
+## Download
+
+| Platform | Download |
+|---|---|
+| **macOS** (Apple Silicon) | [**Thawdrop.dmg**](https://thawdrop.com/download/Thawdrop.dmg) |
+| Windows / Linux / Intel Mac | No prebuilt download yet — [build from source](#building-and-releasing) |
+
+Only the **sender** needs the app. Anyone receiving a Thawdrop link just opens
+it in a browser, nothing to install. The app also updates itself when a new
+version is published.
+
 ## How Thawdrop works
 
 ### The flow, step by step
